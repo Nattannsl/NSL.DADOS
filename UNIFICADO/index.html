@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Operações | infor.dados</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <script>
+        // Carrega o tema imediatamente para evitar qualquer piscada de cor (FOUC)
+        (function () {
+            try {
+                const salvo = localStorage.getItem('infor_dados_tema');
+                if (salvo) {
+                    const dados = JSON.parse(salvo);
+                    const r = document.documentElement.style;
+                    if (dados.tipo === 'preset' && dados.valores) {
+                        const v = dados.valores;
+                        r.setProperty('--cor-primaria', v.primaria);
+                        r.setProperty('--cor-primaria-rgb', v.rgb);
+                        r.setProperty('--cor-destaque', v.destaque);
+                        r.setProperty('--bg-body', v.body);
+                        r.setProperty('--bg-card-ini', v.cardIni);
+                        r.setProperty('--bg-card-fim', v.cardFim);
+                        r.setProperty('--bg-botao', v.botao);
+                        r.setProperty('--bg-input', v.input);
+                    } else if (dados.tipo === 'custom' && dados.valores) {
+                        const v = dados.valores;
+                        for (const k in v) {
+                            r.setProperty(k, v[k]);
+                        }
+                    }
+                }
+            } catch (e) { }
+        })();
+    </script>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <!-- CABEÇALHO -->
+    <header>
+        <div class="topo-inferior">
+            <div class="logo-texto">infor.dados</div>
+
+            <!-- CONTROLE DE CORES / TEMAS -->
+            <div class="controle-tema">
+                <span class="controle-tema-label"></span>
+                <div class="lista-paletas">
+                    <button type="button" class="btn-tema ativo" data-tema="verde" title="Verde Esmeralda (Padrão)"
+                        style="background-color: #00a859;" onclick="selecionarTema('verde')"></button>
+                    <button type="button" class="btn-tema" data-tema="azul" title="Azul Cibernético"
+                        style="background-color: #0070f3;" onclick="selecionarTema('azul')"></button>
+                    <button type="button" class="btn-tema" data-tema="roxo" title="Roxo Cyberpunk"
+                        style="background-color: #8b5cf6;" onclick="selecionarTema('roxo')"></button>
+                    <button type="button" class="btn-tema" data-tema="laranja" title="Laranja Sunset"
+                        style="background-color: #f97316;" onclick="selecionarTema('laranja')"></button>
+                    <button type="button" class="btn-tema" data-tema="vermelho" title="Vermelho Carmim"
+                        style="background-color: #ef4444;" onclick="selecionarTema('vermelho')"></button>
+                    <button type="button" class="btn-tema" data-tema="ciano" title="Ciano Matrix"
+                        style="background-color: #06b6d4;" onclick="selecionarTema('ciano')"></button>
+                    <button type="button" class="btn-tema" data-tema="dourado" title="Dourado Cyber"
+                        style="background-color: #eab308;" onclick="selecionarTema('dourado')"></button>
+
+                    <!-- Seletor de Qualquer Cor (Color Picker) -->
+                    <div class="seletor-custom-wrapper" title="Escolha qualquer cor personalizada">
+                        <div class="btn-custom-cor" id="btnCustomCor">
+                            <input type="color" id="inputCorCustom" onchange="selecionarCorLivre(this.value)"
+                                oninput="selecionarCorLivre(this.value)" value="#00a859">
+                        </div>
+                    </div>
+
+                    <!-- Botão Reset -->
+                    <button type="button" class="btn-reset-tema" title="Restaurar cor padrão"
+                        onclick="selecionarTema('verde')">↺</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- BANNER COM PAINEL DE BOTÕES E EDITOR -->
+    <div class="banner-principal">
+        <div class="banner-texto">
+            <h1>Tech<span> Flash</span></h1>
+            <p>Selecione uma opção abaixo para carregar as especificações técnicas de TI ou extrair modelos de dados
+                prontos.</p>
+
+            <!-- Botões de Opções -->
+            <div class="botoes-grid">
+                <button onclick="carregarConteudo('firewall')">Firewall Informações</button>
+                <button onclick="carregarConteudo('especificacoesAudioKip')">Especificação ÁUDIO KIP</button>
+                <button onclick="carregarConteudo('kipNovo')">Modelo KIP NOVO</button>
+                <button onclick="carregarConteudo('glpiKipNovo')">GLPI KIP NOVO</button>
+                <button onclick="carregarConteudo('chamadoOperadora')">Chamado Operadora</button>
+                <button onclick="carregarConteudo('idIpTelefone')">IP Telefone (TIP 125i)</button>
+                <button onclick="carregarConteudo('checklist')">Checklist de Implantação</button>
+                <button onclick="abrirChecklistKipComercial()" title="Abrir Checklist KIP Comercial no Google Docs">KIP
+                    COMERCIAL</button>
+                <button onclick="abrirChecklistKipTecnico()" title="Checklist KIP no Google Docs">Checklist TEC KIP
+                </button>
+                <button id="btnDadosKipDns"><a href="KIP DNS/index.html">KIP DADOS</a></button>
+            </div>
+        </div>
+
+        <div class="painel-editor">
+            <!-- Painel Especial para Chamados de Operadora (Campos Separados + Seleção de Entrada/Saída) -->
+            <div id="painelOperadora" style="display: none;">
+                <div class="seletor-tipo-chamado">
+                    <button id="btnEntrada" class="ativo" onclick="selecionarTipo('entrada')">📥
+                        ENTRADA</button>
+                    <button id="btnSaida" onclick="selecionarTipo('saida')">📤 SAÍDA</button>
+                </div>
+
+                <div class="campo-grupo">
+                    <label id="lblDestino" for="inputDestino">Número Alvo / Destino:</label>
+                    <input type="text" id="inputDestino" placeholder="Ex: 1636258150">
+                </div>
+
+                <div class="campo-grupo">
+                    <label id="lblOrigens" for="inputOrigens">Testes (Cole os dados brutos):</label>
+                    <textarea id="inputOrigens" style="height: 120px;"
+                        placeholder="Exemplo:&#10;16 99628-0832 tim 8h41&#10;16 99338-4116 vivo 8h42&#10;16 98823-6872 vivo 8h24"></textarea>
+                </div>
+
+                <div class="campo-grupo">
+                    <label for="inputProblema">Problemas / Informações Complementares:</label>
+                    <input type="text" id="inputProblema"
+                        value="(Número não existe) | (Número digitado está incorreto) | (Ligação se encerra direto)">
+                </div>
+            </div>
+
+            <!-- Editor Padrão (utilizado nos outros modelos) -->
+            <div id="painelPadrao">
+                <textarea id="editor"
+                    placeholder="Clique em uma das opções ao lado para carregar o modelo ou as especificações técnicas aqui..."></textarea>
+            </div>
+
+            <div class="acoes-inferiores">
+                <span id="msg" class="copied-msg">✓ Texto copiado com sucesso!</span>
+                <div>
+                    <button id="btnOrganizarOp" class="btn-formatar" style="display:none;"
+                        onclick="gerarChamadoOperadora()">⚡ Gerar RLT Formatado</button>
+                    <button class="btn-copiar" onclick="copiarTexto()">Copiar Texto</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WIDGET FLUTUANTE DE ANOTAÇÕES (ABRE E FECHA QUANDO QUISER) -->
+    <div id="widgetAnotacoesFlutuante">
+        <!-- Botão Disparador Flutuante (FAB) -->
+        <button type="button" id="btnToggleAnotacoes" class="btn-flutuante-anotacoes" onclick="togglePainelAnotacoes()"
+            title="Abrir / Fechar Anotações Rápidas">
+            <span class="icone-fab">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+            </span>
+            <span class="texto-fab">Anotações</span>
+            <span id="badgeIndicadorAnotacoes" class="badge-indicador-conteudo" style="display: none;"
+                title="Você tem anotações gravadas"></span>
+        </button>
+
+        <!-- Janela Flutuante -->
+        <div id="janelaAnotacoesFlutuante" class="janela-flutuante-anotacoes">
+            <div class="janela-anotacoes-header">
+                <div class="janela-anotacoes-titulo">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cor-primaria)"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                    <h3>Anotações</h3>
+                    <span class="badge-status-salvo" id="badgeStatusSalvo">Salvo</span>
+                    <div class="abas-notas">
+                        <button type="button" class="aba-nota ativa" id="abaTxt" onclick="mudarAba('txt')"
+                            title="Modo texto livre">Texto</button>
+                        <button type="button" class="aba-nota" id="abaChk" onclick="mudarAba('chk')"
+                            title="Modo checklist">Checklist</button>
+                    </div>
+                </div>
+                <button type="button" class="btn-fechar-janela" onclick="fecharPainelAnotacoes()"
+                    title="Fechar anotações (Esc)" style="margin-left:auto; flex-shrink:0;">✕</button>
+            </div>
+
+            <!-- Painel: Texto Livre -->
+            <div class="janela-anotacoes-body" id="painelTextoNota">
+                <textarea id="campoAnotacoes" class="campo-anotacoes-flutuante"
+                    placeholder="Digite suas anotações do dia a dia (IPs, clientes, ramais, protocolos de suporte, testes)...&#10;&#10;Tudo é gravado automaticamente no seu navegador."></textarea>
+            </div>
+
+            <!-- Painel: Checklist -->
+            <div class="janela-anotacoes-body painel-checklist" id="painelChecklistNota"
+                style="padding:0; overflow:hidden;">
+                <div class="checklist-adicionar">
+                    <input type="text" id="inputNovaTask" placeholder="Cole uma lista ou digite e pressione Enter..."
+                        onkeydown="if(event.key==='Enter') adicionarTaskChecklist()"
+                        onpaste="onColarTaskChecklist(event)">
+                    <button type="button" onclick="adicionarTaskChecklist()" title="Adicionar tarefa">+</button>
+                </div>
+                <div class="checklist-lista" id="listaChecklist">
+                    <div class="checklist-vazio" id="checklistVazio">
+                        <svg viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="9" />
+                            <path d="M9 12l2 2 4-4" />
+                        </svg>
+                        <span>Nenhuma tarefa ainda.<br>Adicione uma acima.</span>
+                    </div>
+                </div>
+                <div class="janela-anotacoes-footer" style="border-top: 1px solid rgba(255,255,255,0.07);">
+                    <span id="contagemChecklist" style="font-size:11px; color:var(--cor-texto-sub);">0 tarefas</span>
+                    <div class="acoes-flutuante-botoes">
+                        <button type="button" class="btn-secundario-flutuante" onclick="limparConcluidasChecklist()"
+                            title="Remover tarefas concluídas">Limpar Concluídas</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="janela-anotacoes-footer" id="footerTextoNota">
+                <div class="anotacoes-meta-flutuante">
+                    <span id="contagemAnotacoes">0 chars • 0 linhas</span>
+                    <span id="ultimaModificacaoAnotacoes" class="ultima-modificacao"></span>
+                </div>
+                <div class="acoes-flutuante-botoes">
+                    <button type="button" class="btn-secundario-flutuante" onclick="baixarAnotacoesTxt()"
+                        title="Baixar .txt">↓ .txt</button>
+                    <button type="button" class="btn-secundario-flutuante" id="btnLimparNota"
+                        onclick="limparAnotacoes()" title="Limpar todas as anotações">Limpar</button>
+                    <button type="button" class="btn-copiar-flutuante" onclick="copiarAnotacoes()">Copiar</button>
+                </div>
+            </div>
+            <span id="msgAnotacoes" class="copied-msg-flutuante">✓ Copiado com sucesso!</span>
+            <div class="resizer-anotacoes" title="Arraste para redimensionar" aria-label="Redimensionar anotações"
+                onpointerdown="iniciarRedimensionamentoAnotacoes(event)"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
